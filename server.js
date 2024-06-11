@@ -1,18 +1,19 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const productRoute = require('./routes/product.route.js');
 
 const app = express();
 
+// middleware
 app.use(express.json());
+app.use(express.urlencoded({extended: false}));
 
 app.get('/', (req, res) => {
-    res.send('Hello From Node APi V2');
+    res.send('Hello From Node APi V1');
 });
 
-app.post('/api/products', (req, res) => {
-    console.log(req.body);
-    res.send(req.body);
-});
+//routes
+app.use("/api/products", productRoute);
 
 
 mongoose.connect("mongodb+srv://admin:3bJLdVNcnSoEJ8dp@backenddb.jaw0k1m.mongodb.net/Crud-App?retryWrites=true&w=majority&appName=backendDB").then(() =>{
