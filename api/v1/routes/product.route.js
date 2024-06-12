@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { getProducts, getSingleProduct, createProduct, updateProduct, deleteProduct, getGraphQLProducts } = require('../controllers/product.controller');
+const recommendProductsForUserNeural = require('../services/neural.filter');
+const recommendProductsForUser = require('../services/matrix.filter');
+const { getProducts, getSingleProduct, createProduct, updateProduct, deleteProduct } = require('../controllers/product.controller');
 
 const multer = require('multer');
 
@@ -15,5 +17,16 @@ router.post('/', upload.none(), createProduct);
 router.put('/:id', updateProduct);
 
 router.delete('/:id', deleteProduct);
+
+router.get('/recommendations/:userId', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const recommendations = await recommendProductsForUser(userId);
+        res.json(recommendations);
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 module.exports = router;
