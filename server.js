@@ -2,10 +2,66 @@ const express = require('express');
 const mongoose = require('mongoose');
 require("express-async-errors"); // removes the need for try catch in every handler
 const cors = require("cors");
+const dotenv = require("dotenv");
 const helmet = require("helmet");
 const connectDB = require("./db/index");
 const v1Router = require("./api/v1/routes");
 const responseUtilities = require("./api/shared/middlewares/responseUtilities");
+const Product = require('./api/v1/models/product.model');
+const { ApolloServer, gql } = require('apollo-server-express');
+
+// GraphQL Type Definitions
+const typeDefs = gql`
+    type Product {
+        id: ID!
+        name: String!
+        quantity: Int!
+        price: Float!
+        image: String
+        createdAt: String
+        updatedAt: String
+    }
+
+    type Query {
+        products: [Product]
+        product(id: ID!): Product
+    }
+
+    type Mutation {
+        createProduct(name: String!, quantity: Int!, price: Float!, image: String): Product
+        updateProduct(id: ID!, name: String, quantity: Int, price: Float, image: String): Product
+        deleteProduct(id: ID!): Product
+    }
+`;
+
+// GraphQL Resolvers
+const resolvers = {
+    Query: {
+        products: async () => await Product.find({}),
+        product: async (_, { id }) => await Product.findById(id),
+    },
+    Mutation: {
+        createProduct: async (_, { name, quantity, price, image }) => {
+            const product = new Product({ name, quantity, price, image });
+            await product.save();
+            return product;
+        },
+        updateProduct: async (_, { id, name, quantity, price, image }) => {
+            const product = await Product.findByIdAndUpdate(
+                id,
+                { name, quantity, price, image },
+                { new: true, runValidators: true }
+            );
+            return product;
+        },
+        deleteProduct: async (_, { id }) => {
+            const product = await Product.findByIdAndDelete(id);
+            return product;
+        },
+    },
+};
+
+dotenv.config();
 
 const app = express();
 
@@ -41,6 +97,17 @@ app.use(express.urlencoded({extended: true}));
 app.get('/', (req, res) => {
     res.send('Hello From CRUD APi');
 });
+
+
+// Initialize GraphQL endpoint
+const server = new ApolloServer({ typeDefs, resolvers });
+
+async function startServer() {
+    await server.start();
+    server.applyMiddleware({ app, path: '/graphql' });
+}
+
+startServer();
 
 //routes
 app.use("/api/v1", v1Router);
