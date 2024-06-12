@@ -14,6 +14,10 @@ const UserSchema = new mongoose.Schema(
             min: 6,
             max: 255
         },
+        account_type: {
+            type: String,
+            default: 'USER'
+        },
         password: {
             type: String,
             required: true,

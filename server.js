@@ -94,11 +94,22 @@ app.use(responseUtilities);
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
-app.get('/', (req, res) => {
+// app.use(logger);
+
+app.get('/', logger, loggerWithName, (req, res) => {
     res.send('Hello From CRUD APi');
 });
 
+function logger(req, res, next) {
+  console.log(req.originalUrl);
+  req.apiUrl = req.originalUrl;
+  next();
+}
 
+function loggerWithName(req, res, next) {
+  console.log("Url: " + req.apiUrl);
+  next();
+}
 // Initialize GraphQL endpoint
 const server = new ApolloServer({ typeDefs, resolvers });
 

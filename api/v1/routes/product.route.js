@@ -29,4 +29,10 @@ router.get('/recommendations/:userId', async (req, res) => {
     }
 });
 
+router.param('id', (req, res, next, id) => {
+    req.user = id;
+    console.log(id);
+    next();
+});
+
 module.exports = router;
