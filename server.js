@@ -10,12 +10,19 @@ const responseUtilities = require("./api/shared/middlewares/responseUtilities");
 const { buildSchema } = require("graphql");
 const { createHandler } = require('graphql-http/lib/use/express');
 const { ruruHTML } = require("ruru/server");
+const cron = require('node-cron');
 
 dotenv.config();
 
 const app = express();
 
 connectDB();
+
+// cron.schedule('* * * * *', () => {
+//   console.log('Running cron job to update document');
+// });
+
+console.log('Cron job scheduled to run every minute');
 
 const whiteList = [
     "http://localhost:3000",
