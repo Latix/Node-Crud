@@ -4,6 +4,8 @@ const multer = require('multer');
 const OpenAI = require('openai');
 const fs = require('fs');
 const path = require('path');
+var postmark = require("postmark");
+const handlebars = require('handlebars');
 
 // Configure multer for file uploads
 const upload = multer({ dest: 'uploads/' });
@@ -15,6 +17,38 @@ const openai = new OpenAI({
 
 router.get('/', (req, res) => {
   res.send("Welcome to services!")
+});
+
+router.get('/email', async (req, res) => {
+  // Read the HTML content from the file
+  const emailTemplatePath = path.join(__dirname, 'email.html');
+  const htmlContent = fs.readFileSync(emailTemplatePath, 'utf-8');
+
+  // Compile the Handlebars template
+  const template = handlebars.compile(htmlContent);
+
+  // Define your dynamic variables
+  const variables = {
+    name: 'John Doe',
+    actionUrl: 'http://example.com'
+  };
+
+  // Replace the placeholders with actual values
+  const htmlToSend = template(variables);
+
+  // Send an email using Postmark
+  const client = new postmark.ServerClient("2e9aa992-b951-4de8-8ee8-cac79a0ad590");
+
+  await client.sendEmail({
+    "From": "kamsi@infiuss.com",
+    "To": "kamsi@infiuss.com",
+    "Subject": "Hello from Postmark",
+    "HtmlBody": htmlToSend,
+    "TextBody": "Hello from Postmark!",
+    "MessageStream": "outbound"
+  });
+
+  res.send("Mail Sent!");
 });
 
 // Endpoint to upload file and get summary
